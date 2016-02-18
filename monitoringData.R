@@ -31,6 +31,11 @@ if (!require("plyr")) {
     library(plyr)
     }
 
+if (!require("ggplot2")) {
+        install.packages("ggplot2")
+        library(plyr)
+}
+
 
 
 ## ====================================================================
@@ -63,19 +68,13 @@ str(origData)
 size <- dim(origData)
 # [1] 17568     3
 
-# Count of NA values
-na_count <-sapply(origData, function(x) sum(length(which(is.na(x)))))
-na_count <- data.frame(na_count)
-na_count
-# steps        2304
-# date            0
-# interval        0
 
 
 ## Transform data to be suitable for the analysis
 ## ----------------------------------------------
 # Transform 'date' to date format
 origData$date <-as.Date(origData$date)
+
 # Add column 'day' as factor
 origData$day <- as.factor(format(origData$date, '%d'))
 
@@ -85,35 +84,125 @@ origData$day <- as.factor(format(origData$date, '%d'))
 ## ====================================================================
 
 # Calculate the total number of steps taken per day
-synthData <- ddply(origData, .(day), summarise
+synthData <- ddply(origData, .(date), summarize
                    , mean = round(mean(steps))
-                   , median = round(median(steps))
                    , maximum = max(steps)
                    , total=sum(steps)
                    )
 summary(synthData)
 
 # complete cases of data ~ eliminate "NA"
-aux <- synthData[complete.cases(synthData),]
+synthData <- synthData[complete.cases(synthData),]
 
 # Histogram of total # of steps/day -  creating a histogram and saving in .png format
 png("histStepsbyDay.png", width = 480, height = 480)
 
-hist(aux$total,
+hist(synthData$total,
      main="Histogram ~ Total steps per day",
-     breaks=seq(min(aux$total), max(aux$total), by=((max(aux$total) - min(aux$total))/6)),
+     breaks=seq(min(synthData$total), max(synthData$total), by=((max(synthData$total) - min(synthData$total))/8)),
      xlab="Number of steps",
      border="lightcoral",
      col="lightblue2",
      xaxt='n'
      )
-axis(side=1, at=seq(0,max(aux$total),2000), labels=seq(0,max(aux$total),2000))
+axis(side=1, at=seq(0,max(synthData$total),2000), labels=seq(0,max(synthData$total),2000))
 
 dev.off()
 
+qplot(synthData$total,
+      geom="histogram",
+      binwidth = 1000,
+      main = "Histogram for Total Steps",
+      xlab = "Total steps per day",
+      fill=I("blue"),
+      col=I("red"),
+      alpha=I(.2),
+      xlim=c(min(synthData$total),max(synthData$total)))
+
+ggplot(data=synthData, aes(synthData$total)) +
+        geom_histogram(breaks=seq(min(synthData$total), max(synthData$total), by=((max(synthData$total) - min(synthData$total))/8)),
+                       col="red",
+                       fill="blue",
+                       alpha = .2) +
+        labs(title="Histogram for Total Steps") +
+        labs(x="Age", y="Count") +
+        xlim(c(min(synthData$total),max(synthData$total))) +
+        ylim(c(0,20))
 
 ## ====================================================================
 ## [3]. Average daily activity pattern.
 ## ====================================================================
+
+intervData <- subset( origData, select = -day )
+
+intervData <- ddply(intervData, .(interval), transform, days = length(date), average = 0)
+test <- aggregate(steps ~ interval + days, data = intervData, FUN = sum)
+test$average <- test$steps/test$days
+
+unique(within(intervData, {
+        steps <- ave(steps, interval, FUN = sum)
+        average <- ave(average, interval, FUN = mean)
+}))
+
+
+## ====================================================================
+## [4]. Imputing missing values.
+## ====================================================================
+
+# Simply count the NAs for one column
+# ------------------------------------------
+missingNA <- sum(is.na(origData$steps))
+isNA <- is.na(origData$steps)
+
+
+# Count of NAs values for each column
+# ------------------------------------------
+na_count <-sapply(origData, function(x) sum(length(which(is.na(x)))))
+na_count <- data.frame(na_count)
+na_count
+# steps        2304
+# date            0
+# interval        0
+
+# Create a new dataset with missing data filled in
+# ------------------------------------------
+
+orig <- origData[which(origData$interval == '5'),]
+
+# Use the  mean for the 5-minute interval to fill in the missing values
+imputedData <- ddply(origData, .(interval), function(df) {
+        df$steps[is.na(df$steps)] <- round(mean(df$steps, na.rm=TRUE))
+        return(df)
+        })
+
+imputedData[which(imputedData$day == '01'),]
+str(imputedData)
+
+
+# Calculate the total number of steps taken per day
+synth <- ddply(imputedData, .(date), summarize
+                   , mean = round(mean(steps))
+                   , maximum = max(steps)
+                   , total=sum(steps)
+)
+
+png("histImputedData.png", width = 480, height = 480)
+
+hist(synth$total,
+     main="Histogram ~ Total steps per day",
+     breaks=seq(min(synth$total), max(synth$total), by=((max(synth$total) - min(synth$total))/6)),
+     xlab="Number of steps",
+     border="lightcoral",
+     col="lightblue2",
+     xaxt='n'
+)
+axis(side=1, at=seq(0,max(synth$total),2000), labels=seq(0,max(synth$total),2000))
+
+dev.off()
+
+## ====================================================================
+## [5]. Differences in activity patterns between weekdays and weekends.
+## ====================================================================
+
 
 
