@@ -1,9 +1,4 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 The analysis makes use of data from a personal activity monitoring device, such 
 as a Fitbit, Nike Fuelband, or Jawbone Up. This device collects data at 5 minute
@@ -38,7 +33,8 @@ All the figures in the analysis have been created with ```{r gg, echo=TRUE} ggpl
 Read the data from the .csv file located in the "data" folder within the working 
 directory.
 
-```{r read_csv, echo=TRUE}
+
+```r
 origData <- read.csv(file = "./data/activity.csv", 
                      header=TRUE, sep=",", stringsAsFactors = FALSE)
 ```
@@ -46,16 +42,49 @@ origData <- read.csv(file = "./data/activity.csv",
 
 Perform a first basic analysis about the dataset, to have an idea how is organised.
 
-```{r first_analysis, echo=TRUE}
+
+```r
 head(origData)
+```
+
+```
+##   steps       date interval
+## 1    NA 2012-10-01        0
+## 2    NA 2012-10-01        5
+## 3    NA 2012-10-01       10
+## 4    NA 2012-10-01       15
+## 5    NA 2012-10-01       20
+## 6    NA 2012-10-01       25
+```
+
+```r
 summary(origData)
+```
+
+```
+##      steps            date              interval     
+##  Min.   :  0.00   Length:17568       Min.   :   0.0  
+##  1st Qu.:  0.00   Class :character   1st Qu.: 588.8  
+##  Median :  0.00   Mode  :character   Median :1177.5  
+##  Mean   : 37.38                      Mean   :1177.5  
+##  3rd Qu.: 12.00                      3rd Qu.:1766.2  
+##  Max.   :806.00                      Max.   :2355.0  
+##  NA's   :2304
+```
+
+```r
 dim(origData)
+```
+
+```
+## [1] 17568     3
 ```
 
 
 ### Transform data to be suitable for the analysis
 
-```{r date, echo=TRUE}
+
+```r
 origData$date <-as.Date(origData$date)
 ```
 
@@ -70,13 +99,24 @@ The total number of steps taken per day is calculated by making use of one of
 the aggregation function from the library ``` plyr ```. The function provides us with
 the possibility to calculate other measures at the same time (_i.e.,mean, maximum_).
 
-```{r date_type, echo=TRUE}
+
+```r
 library(plyr)
 synthData <- ddply(origData, .(date), summarize,
                    total = sum(steps),
                    mean = round(mean(steps)),
                    maximum = max(steps))
 head(synthData)                   
+```
+
+```
+##         date total mean maximum
+## 1 2012-10-01    NA   NA      NA
+## 2 2012-10-02   126    0     117
+## 3 2012-10-03 11352   39     613
+## 4 2012-10-04 12116   42     547
+## 5 2012-10-05 13294   46     555
+## 6 2012-10-06 15420   54     526
 ```
 
 
@@ -87,7 +127,8 @@ the ``` ggplot2 ``` library.
 
 The code generating the histogram is:
 
-```{r hist_total, echo=TRUE}
+
+```r
 library(ggplot2)
 ggplot(data=synthData, aes(synthData$total)) +
         geom_histogram(breaks=seq(0, 25000, by=1700),
@@ -96,10 +137,16 @@ ggplot(data=synthData, aes(synthData$total)) +
         labs(title="Histogram for Mean total steps per day")                   
 ```
 
+```
+## Warning: Removed 8 rows containing non-finite values (stat_bin).
+```
+
+![](PA1_template_files/figure-html/hist_total-1.png)
+
 The **mean** and **median** total number of steps taken per day are as follows:
 
- 1. Mean --> `r mean(synthData$total)`
- 2. Median --> `r median(synthData$total)`
+ 1. Mean --> NA
+ 2. Median --> NA
 
 
 -----------
@@ -124,13 +171,24 @@ When calculating the mean, the rows containing the NAs values have not been
 considered (``` na.rm=TRUE ```).
 
 
-```{r imputed, echo=TRUE}
+
+```r
 library(plyr)
 imputedData <- ddply(origData, .(interval), function(df) {
         df$steps[is.na(df$steps)] <- round(mean(df$steps, na.rm=TRUE))
         return(df)
         })
 head(imputedData)                   
+```
+
+```
+##   steps       date interval
+## 1     2 2012-10-01        0
+## 2     0 2012-10-02        0
+## 3     0 2012-10-03        0
+## 4    47 2012-10-04        0
+## 5     0 2012-10-05        0
+## 6     0 2012-10-06        0
 ```
 
 ![Histogram plot](instructions_fig/hist_StepsPerDays_imputedNA.png) 
