@@ -21,11 +21,31 @@ coded as NA);
 * _interval_ : Identifier for the 5-minute interval in which measurement was 
 taken.
 
-All the figures in the analysis have been created with ```{r gg, echo=TRUE} ggplot2 ``` library.
+All the figures in the analysis have been created with 
+``` ggplot2 ``` library.
+
+Other packages used in the analysis as follow:
+
+* ``` plyr ```
+* ``` chron ```
+* ``` knitr ```
+
+Example code to verify the existance and to install the package if not present:
+
+
+```r
+if (!require("ggplot2")) {
+        install.packages("ggplot2")
+        library(plyr)}
+```
+
+```
+## Loading required package: ggplot2
+```
+
 
 -----------
 
-   
 ## 1. Loading and preprocessing the data
 
 ### Load the data.
@@ -40,7 +60,8 @@ origData <- read.csv(file = "./data/activity.csv",
 ```
 
 
-Perform a first basic analysis about the dataset, to have an idea how is organised.
+Perform a first basic analysis of the dataset, to have an idea of its 
+characteristics and how is iorganised.
 
 
 ```r
@@ -89,7 +110,7 @@ origData$date <-as.Date(origData$date)
 ```
 
 -----------
-      
+
 
 ## 2. What is mean total number of steps taken per day?
 
@@ -106,7 +127,7 @@ synthData <- ddply(origData, .(date), summarize,
                    total = sum(steps),
                    mean = round(mean(steps)),
                    maximum = max(steps))
-head(synthData)                   
+head(synthData)   
 ```
 
 ```
@@ -119,11 +140,27 @@ head(synthData)
 ## 6 2012-10-06 15420   54     526
 ```
 
+```r
+Mean <- mean(synthData$total); Mean
+```
 
-The following figure shows the histogram of the total steps per day, created with 
-the ``` ggplot2 ``` library.
+```
+## [1] NA
+```
+
+```r
+Median <- median(synthData$total); Median
+```
+
+```
+## [1] NA
+```
+
+
+The following figure shows the histogram of the total steps per day.
 
 ![Histogram plot of steps per day](instructions_fig/hist_StepsPerDay.png) 
+
 
 The code generating the histogram is:
 
@@ -137,16 +174,11 @@ ggplot(data=synthData, aes(synthData$total)) +
         labs(title="Histogram for Mean total steps per day")                   
 ```
 
-```
-## Warning: Removed 8 rows containing non-finite values (stat_bin).
-```
+The **mean** and **median** total number of steps taken per day, taking into
+consideration the rows with NA value.:
 
-![](PA1_template_files/figure-html/hist_total-1.png)
-
-The **mean** and **median** total number of steps taken per day are as follows:
-
- 1. Mean --> NA
- 2. Median --> NA
+ 1. Mean --> ``1.0766\times 10^{4}``
+ 2. Median --> ``10765``
 
 
 -----------
@@ -154,8 +186,9 @@ The **mean** and **median** total number of steps taken per day are as follows:
 ## 3. What is the average daily activity pattern?
 
 The following figure shows the time series plot of the average number of steps 
-taken (y-axis), averaged across all days, divided in the 5-minute intervals. 
-The x-axes shows the progressive sum of the 5-minute interval, totaling a 24h day.
+taken (y-axis), averaged across all days, divided in 5-minute intervals. 
+The x-axes shows the progressive sum of the 5-minute interval, totaling a 24h 
+day (2355 minutes).
 
 The blue point represents, on average across all the days in the dataset, the 
 maximum number of steps which falls in the _104th_ 5-minute interval (835 minutes).
@@ -191,7 +224,41 @@ head(imputedData)
 ## 6     0 2012-10-06        0
 ```
 
-![Histogram plot](instructions_fig/hist_StepsPerDays_imputedNA.png) 
+
+The following figure shows the histogram of steps per days, obtained from the
+dataset with imputed NA values.
+
+![Histogram plot with imputed NA values](instructions_fig/hist_StepsPerDays_imputedNA.png) 
+
+
+The **mean** and **median** total number of steps taken per day are as follows.
+The dataset ``` synth ``` is an aggregation of the set with the imputed NA
+values, from the previous step. See how the ``` synthData ``` has been obtained
+in **Section 2**. Here is a sample of the dataset and the mean and median of the
+total steps.
+
+
+
+```
+##         date total mean median maximum
+## 1 2012-10-01 10762   37   34.5     206
+## 2 2012-10-02   126    0    0.0     117
+## 3 2012-10-03 11352   39    0.0     613
+## 4 2012-10-04 12116   42    0.0     547
+## 5 2012-10-05 13294   46    0.0     555
+## 6 2012-10-06 15420   54    0.0     526
+```
+
+```
+## [1] 10765.64
+```
+
+```
+## [1] 10762
+```
+
+The mean and median are slightly different due to the imputed NA values.
+
 
 ------------
 
@@ -208,4 +275,4 @@ After dividing the dataset in two, corresponding to week-days and weekend days,
 the logic of the activity is similar to the one from the third paragraph.
 
 
-![Histogram plot](instructions_fig/hist_StepsPerDays_imputedNA.png) 
+![Histogram plot](instructions_fig/plot_TimeSeries_wdays.png) 

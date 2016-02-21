@@ -36,11 +36,6 @@ if (!require("ggplot2")) {
         library(plyr)
 }
 
-if (!require("lubridate")) {
-        install.packages("lubridate")
-        library(plyr)
-}
-
 if (!require("chron")) {
         install.packages("chron")
         library(plyr)
@@ -89,9 +84,6 @@ size <- dim(origData)
 # Transform 'date' to date format
 origData$date <-as.Date(origData$date)
 
-# Add column 'day' as factor
-#origData$day <- as.factor(format(origData$date, '%d'))
-
 
 ## ====================================================================
 ## [2]. Compute mean total number of steps taken per day.
@@ -106,51 +98,19 @@ synthData <- ddply(origData, .(date), summarize,
 summary(synthData)
 
 # complete cases of data ~ eliminate "NA"
-synthData <- synthData[complete.cases(synthData),]
+#synthData <- synthData[complete.cases(synthData),]
 
 # Histogram of total # of steps/day -  creating a histogram and saving in .png format
-png("histStepsbyDay.png", width = 480, height = 480)
-
-hist(synthData$total,
-     main="Histogram ~ Total steps per day",
-     breaks=seq(min(synthData$total), max(synthData$total), by=((max(synthData$total) - min(synthData$total))/8)),
-     xlab="Number of steps",
-     border="lightcoral",
-     col="lightblue2",
-     xaxt='n'
-     )
-axis(side=1, at=seq(0,max(synthData$total),2000), labels=seq(0,max(synthData$total),2000))
-
-dev.off()
-
-qplot(synthData$total,
-      geom="histogram",
-      binwidth = 1000,
-      main = "Histogram for Total Steps",
-      xlab = "Total steps per day",
-      fill=I("blue"),
-      col=I("red"),
-      alpha=I(.2),
-      xlim=c(min(synthData$total),max(synthData$total)))
-
-ggplot(data=synthData, aes(synthData$total)) +
-        geom_histogram(breaks=seq(min(synthData$total), max(synthData$total), by=((max(synthData$total) - min(synthData$total))/8)),
-                       col="red",
-                       fill="blue",
-                       alpha = .2) +
-        labs(title="Histogram for Total Steps") +
-        labs(x="Age", y="Count") +
-        xlim(c(min(synthData$total),max(synthData$total))) +
-        ylim(c(0,20))
-
-
 png("instructions_fig/hist_StepsPerDay.png", width = 480, height = 480)
-ggplot(data=synthData, aes(synthData$total)) +
-        geom_histogram(breaks=seq(0, 25000, by=1700),
-                       col="red", aes(fill=..count..)) +
-        labs(x = "Steps per day", y = "Count") +
-        labs(title="Histogram for Mean total steps per day")
+print(
+        ggplot(data=synthData, aes(synthData$total)) +
+                geom_histogram(breaks=seq(0, 25000, by=1700),
+                               col="red", aes(fill=..count..)) +
+                labs(x = "Steps per day", y = "Count") +
+                labs(title="Histogram for Mean total steps per day")
+)
 dev.off()
+#ggsave("instructions_fig/hist_StepsPerDay.png", width = 4, height = 3)
 
 
 ## ====================================================================
@@ -158,15 +118,6 @@ dev.off()
 ## ====================================================================
 
 aveInterval <- aggregate(steps ~ interval, data = origData, FUN = mean)
-
-# Transform interval to "Time" representation
-dt <- sprintf("%04d", aveInterval$interval); dt
-dt <- strptime(dt, format="%H%M"); dt
-
-
-aveInterval$time <- strptime(sprintf("%04d", aveInterval$interval),
-                             format="%H%M")
-aveInterval$time <- as.POSIXct(aveInterval$time, format="%H:%M:%S")
 
 # Which 5-minute interval, on average across all the days in the dataset,
 # contains the maximum number of steps?
@@ -176,19 +127,24 @@ minsVal <- aveInterval$interval[idx]; minsVal
 
 # Create the time series plot and same as 'png'
 text <- paste("(",minsVal,",",round(maxSteps),")")
-ggplot(aveInterval, aes(interval, steps)) +
-        geom_line(colour="#CC0000") +
-        #scale_x_date(date_labels = "%H:maxSteps%M") +
-        #scale_x_continuous(breaks=1:10)+
-        xlim(0, 2500)+
-        xlab("Minutes") +
-        ylab("Average daily steps")+
-        geom_hline(yintercept = maxSteps)+
-        geom_point(aes(x=minsVal, y=maxSteps), colour="blue", size =1.5) +
-        geom_text(aes(label = text, x = minsVal + 20, y=maxSteps-2,
-                      vjust = "inward", hjust = "inward"))
-        #geom_abline(aes(intercept=max(aveInterval$steps), slope=90),colour = "blue", size = 1)
-ggsave("instructions_fig/plot_TimeSeries_5min.png", width = 2.5, height = 1)
+png("instructions_fig/plot_TimeSeries_5min.png", width = 480, height = 480)
+print(
+        ggplot(aveInterval, aes(interval, steps)) +
+                geom_line(colour="#CC0000") +
+                #scale_x_date(date_labels = "%H:maxSteps%M") +
+                #scale_x_continuous(breaks=1:10)+
+                xlim(0, 2500)+
+                xlab("Minutes") +
+                ylab("Average daily steps")+
+                labs(title="Steps pattern during a 24h period")+
+                geom_hline(yintercept = maxSteps)+
+                geom_point(aes(x=minsVal, y=maxSteps), colour="blue", size =1.5) +
+                geom_text(aes(label = text, x = minsVal + 20, y=maxSteps-2,
+                              vjust = "inward", hjust = "inward"))
+                #geom_abline(aes(intercept=max(aveInterval$steps), slope=90),colour = "blue", size = 1)
+)
+dev.off()
+#ggsave("instructions_fig/plot_TimeSeries_5min.png", width = 2.5, height = 1)
 
 ## ====================================================================
 ## [4]. Imputing missing values.
@@ -226,13 +182,18 @@ synth <- ddply(imputedData, .(date), summarize, total=sum(steps),
                median = median(steps),
                maximum = max(steps))
 
-ggplot(data=synth, aes(synth$total)) +
-        geom_histogram(breaks=seq(0, 25000, by=1500),
-                       col="red",
-                       aes(fill=..count..)) +
-        labs(x = "Steps per day", y = "Count") +
-        labs(title="Histogram for Total steps per day")
-ggsave("instructions_fig/hist_StepsPerDays_imputedNA.png", width = 2.5, height = 1)
+# Create the histogram for the dataset with imputed NAs
+png("instructions_fig/hist_StepsPerDays_imputedNA.png", width = 480, height = 480)
+print(
+        ggplot(data=synth, aes(synth$total)) +
+                geom_histogram(breaks=seq(0, 25000, by=1500),
+                               col="red",
+                               aes(fill=..count..)) +
+                labs(x = "Steps per day", y = "Count") +
+                labs(title="Histogram - Total steps per day/imputed NAs")
+)
+dev.off()
+#ggsave("instructions_fig/hist_StepsPerDays_imputedNA.png", width = 2.5, height = 1)
 
 ## ====================================================================
 ## [5]. Differences in activity patterns between weekdays and weekends.
@@ -267,49 +228,15 @@ summ <- ddply(dat, .(daytype), summarize,
                maximum = max(steps))
 
 # Panel plot of the datasets
-ggplot(dat, aes(x = interval, y = steps, colour = days)) +
-        geom_line(colour="#CC0000") +
-        xlim(0, 2500) +
-        xlab("Minutes") +
-        ylab("Average daily steps") +
-        facet_grid(facets = daytype ~ .)
-ggsave("instructions_fig/plot_TimeSeries_wdays.png")
-       #, width = 2.5, height = 1)
+png("instructions_fig/hist_StepsPerDays_imputedNA.png", width = 480, height = 480)
+print(
+        ggplot(dat, aes(x = interval, y = steps, colour = days)) +
+                geom_line(colour="#CC0000") +
+                xlim(0, 2500) +
+                xlab("Minutes") +
+                ylab("Average daily steps") +
+                labs(title="Activity patterns - weekdays and weekends")+
+                facet_grid(facets = daytype ~ .)
+)
+dev.off
 
-
-
-
-
-
-aveInterval <- aggregate(steps ~ interval, data = origData, FUN = mean)
-
-# Transform interval to "Time" representation
-dt <- sprintf("%04d", aveInterval$interval); dt
-dt <- strptime(dt, format="%H%M"); dt
-
-
-aveInterval$time <- strptime(sprintf("%04d", aveInterval$interval),
-                             format="%H%M")
-aveInterval$time <- as.POSIXct(aveInterval$time, format="%H:%M:%S")
-
-# Which 5-minute interval, on average across all the days in the dataset,
-# contains the maximum number of steps?
-maxSteps <- max(aveInterval$steps);
-idx <- which(aveInterval$steps==maxSteps, arr.ind=TRUE); idx
-minsVal <- aveInterval$interval[idx]; minsVal
-
-# Create the time series plot and same as 'png'
-text <- paste("(",minsVal,",",round(maxSteps),")")
-ggplot(aveInterval, aes(interval, steps)) +
-        geom_line(colour="#CC0000") +
-        #scale_x_date(date_labels = "%H:maxSteps%M") +
-        #scale_x_continuous(breaks=1:10)+
-        xlim(0, 2500)+
-        xlab("Minutes") +
-        ylab("Average daily steps")+
-        geom_hline(yintercept = maxSteps)+
-        geom_point(aes(x=minsVal, y=maxSteps), colour="blue", size =1.5) +
-        geom_text(aes(label = text, x = minsVal + 20, y=maxSteps-2,
-                      vjust = "inward", hjust = "inward"))
-#geom_abline(aes(intercept=max(aveInterval$steps), slope=90),colour = "blue", size = 1)
-ggsave("instructions_fig/plot_TimeSeries_5min.png", width = 2.5, height = 1)
