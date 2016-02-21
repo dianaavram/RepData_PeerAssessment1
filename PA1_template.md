@@ -140,26 +140,10 @@ head(synthData)
 ## 6 2012-10-06 15420   54     526
 ```
 
-```r
-Mean <- mean(synthData$total); Mean
-```
-
-```
-## [1] NA
-```
-
-```r
-Median <- median(synthData$total); Median
-```
-
-```
-## [1] NA
-```
-
 
 The following figure shows the histogram of the total steps per day.
 
-![Histogram plot of steps per day](instructions_fig/hist_StepsPerDay.png) 
+![Histogram plot of steps per day](figure/hist_StepsPerDay.png) 
 
 
 The code generating the histogram is:
@@ -193,7 +177,7 @@ day (2355 minutes).
 The blue point represents, on average across all the days in the dataset, the 
 maximum number of steps which falls in the _104th_ 5-minute interval (835 minutes).
 
-![Time series plot for daily activity](instructions_fig/plot_TimeSeries_5min.png) 
+![Time series plot for daily activity](figure/plot_TimeSeries_5min.png) 
 
 
 ## 4. Imputing missing values
@@ -228,7 +212,7 @@ head(imputedData)
 The following figure shows the histogram of steps per days, obtained from the
 dataset with imputed NA values.
 
-![Histogram plot with imputed NA values](instructions_fig/hist_StepsPerDays_imputedNA.png) 
+![Histogram plot with imputed NA values](figure/hist_StepsPerDays_imputedNA.png) 
 
 
 The **mean** and **median** total number of steps taken per day are as follows.
@@ -275,4 +259,16 @@ After dividing the dataset in two, corresponding to week-days and weekend days,
 the logic of the activity is similar to the one from the third paragraph.
 
 
-![Histogram plot](instructions_fig/plot_TimeSeries_wdays.png) 
+![Histogram plot](figure/plot_TimeSeries_wdays.png) 
+
+
+## 6. Files
+
+The main files and folders necessary for the analysis are:
+
+* ``PA1_template.Rmd``
+* ``monitoringData.R``
+* ``monitoringData.RData``
+* Folder ``figure\``
+* Folder ``data\``
+

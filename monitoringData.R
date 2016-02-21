@@ -101,7 +101,7 @@ summary(synthData)
 #synthData <- synthData[complete.cases(synthData),]
 
 # Histogram of total # of steps/day -  creating a histogram and saving in .png format
-png("instructions_fig/hist_StepsPerDay.png", width = 480, height = 480)
+png("figure/hist_StepsPerDay.png", width = 480, height = 480)
 print(
         ggplot(data=synthData, aes(synthData$total)) +
                 geom_histogram(breaks=seq(0, 25000, by=1700),
@@ -127,7 +127,7 @@ minsVal <- aveInterval$interval[idx]; minsVal
 
 # Create the time series plot and same as 'png'
 text <- paste("(",minsVal,",",round(maxSteps),")")
-png("instructions_fig/plot_TimeSeries_5min.png", width = 480, height = 480)
+png("figure/plot_TimeSeries_5min.png", width = 480, height = 480)
 print(
         ggplot(aveInterval, aes(interval, steps)) +
                 geom_line(colour="#CC0000") +
@@ -183,7 +183,7 @@ synth <- ddply(imputedData, .(date), summarize, total=sum(steps),
                maximum = max(steps))
 
 # Create the histogram for the dataset with imputed NAs
-png("instructions_fig/hist_StepsPerDays_imputedNA.png", width = 480, height = 480)
+png("figure/hist_StepsPerDays_imputedNA.png", width = 480, height = 480)
 print(
         ggplot(data=synth, aes(synth$total)) +
                 geom_histogram(breaks=seq(0, 25000, by=1500),
@@ -228,7 +228,7 @@ summ <- ddply(dat, .(daytype), summarize,
                maximum = max(steps))
 
 # Panel plot of the datasets
-png("instructions_fig/hist_StepsPerDays_imputedNA.png", width = 480, height = 480)
+png("figure/hist_StepsPerDays_imputedNA.png", width = 480, height = 480)
 print(
         ggplot(dat, aes(x = interval, y = steps, colour = days)) +
                 geom_line(colour="#CC0000") +
